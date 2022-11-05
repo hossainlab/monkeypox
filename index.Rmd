@@ -1,0 +1,156 @@
+---
+title: "Monkeypox Data Explorer"
+output: 
+  flexdashboard::flex_dashboard:
+    orientation: rows
+    social: menu
+    source_code: https://github.com/hossainlab/monkeypox
+---
+
+```{r setup, include=FALSE}
+library(flexdashboard)
+library(tidyverse)
+library(highcharter)
+library(gt)
+library(htmltools)
+library(viridis)
+library(echarts4r)
+## Data cleaning 
+library(data.table)
+library(dplyr)
+library(tidyr)
+library(magrittr)
+library(purrr)
+library(forcats)
+
+## printing 
+library(glue)
+
+
+## Maps and Plots
+library(plotly)
+library(leaflet)
+library(leafpop)
+library(RColorBrewer)
+
+
+# Dates
+library(lubridate) 
+
+## For displaying tables
+library(DT)
+theme_set(theme_classic())
+```
+
+```{r, data-import, include=FALSE}
+data <- read.csv("https://raw.githubusercontent.com/owid/monkeypox/main/owid-monkeypox-data.csv", stringsAsFactors = TRUE)
+
+data$date <- as.Date(data$date)
+```
+
+```{r, colors, include=FALSE}
+confirmed_color <- "lightsteelblue"
+active_color <- "orange"
+new_deaths_color <- "limegreen"
+death_color <- "red"
+```
+
+
+Sidebar {.sidebar}
+=======================================================================
+
+### Monkeypox Data Explorer
+Visualizing the data produced by the World Health Organization on the 2022 monkeypox outbreak.
+
+- Monkeypox is a viral disease that occurs mostly in central and western Africa. 
+-  It can occur in humans and some other animals.
+- Sources:  [World Health Research Organization](https://extranet.who.int/publicemergency/)
+
+
+Built by [Md. Jubayer Hossain]()
+
+
+
+Overview  
+=======================================================================
+
+Row
+-----------------------------------------------------------------------
+
+### Confirmed Cases {.value-box}
+
+```{r}
+confirmed <- format(max(data$total_cases), big.mark = ",")
+valueBox(value = confirmed, 
+         caption = "Total Confirmed Cases", 
+         color = confirmed_color)
+```
+
+
+### New Cases {.value-box}
+```{r}
+active <- format(max(data$new_cases), big.mark = ",")
+valueBox(value = active, 
+         caption = "Total New Cases", 
+         color = active_color)
+```
+
+### Confirmed Deaths {.value-box}
+```{r}
+deaths <- format(max(data$total_deaths), big.mark = ",")
+valueBox(value = deaths, 
+         caption = "Total Deaths", 
+         color = death_color)
+```
+
+### New Deaths {.value-box}
+```{r}
+new_deaths <- format(max(data$new_deaths), big.mark = ",")
+valueBox(value = new_deaths, 
+         caption = "Total New Deaths", 
+         color = "purple")
+```
+
+
+Row 
+-----------------------------------------------------------------------
+
+### Number of Confirmed Cases by Location {data-width=700}
+
+```{r}
+data %>%
+  e_charts(location) %>%
+  e_map(total_cases) %>%
+  e_visual_map() %>%
+  e_theme("infographic") %>%
+  e_visual_map_range(selected= list(0,200))
+```
+
+
+### Number of Confirmed Cases by Location (Top 15 Countries) {data-width=340}
+
+```{r}
+# Most cases by countries 
+data %>% 
+  group_by(location) %>% 
+  summarise(Confirmed = max(total_cases)) %>% 
+  arrange(desc(Confirmed)) %>% 
+  head(15) %>% 
+  hchart('column', hcaes(x = location, y = Confirmed, color = viridis::mako(n = 15))) %>%   hc_add_theme(hc_theme_google()) %>% 
+  hc_tooltip(pointFormat = '<b>Number of Confirmed Cases: </b> {point.y} <br>') %>% 
+  hc_credits(enabled = TRUE, text = '@Jubayer')
+```
+
+
+Maps 
+=======================================================================
+
+### Recent Downlads
+
+Summary  
+=======================================================================
+
+
+About  
+=======================================================================
+
