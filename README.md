@@ -1,2 +1,1 @@
-# monkeypox
-Monkeypox dashboard
+# Monkeypox Data Explorer
