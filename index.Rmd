@@ -43,7 +43,8 @@ theme_set(theme_classic())
 ```
 
 ```{r, data-import, include=FALSE}
-data <- read.csv("https://raw.githubusercontent.com/owid/monkeypox/main/owid-monkeypox-data.csv", stringsAsFactors = TRUE)
+data <- read.csv("https://raw.githubusercontent.com/owid/monkeypox/main/owid-monkeypox-data.csv", stringsAsFactors = T)
+
 
 data$date <- as.Date(data$date)
 ```
@@ -56,29 +57,10 @@ death_color <- "red"
 ```
 
 
-Sidebar {.sidebar}
-=======================================================================
-
-### Monkeypox Data Explorer
-Visualizing the data produced by the World Health Organization on the 2022 monkeypox outbreak.
-
-- Monkeypox is a viral disease that occurs mostly in central and western Africa. 
--  It can occur in humans and some other animals.
-- Sources:  [World Health Research Organization](https://extranet.who.int/publicemergency/)
-
-
-Built by [Md. Jubayer Hossain]()
-
-
-
-Overview  
-=======================================================================
-
 Row
 -----------------------------------------------------------------------
 
 ### Confirmed Cases {.value-box}
-
 ```{r}
 confirmed <- format(max(data$total_cases), big.mark = ",")
 valueBox(value = confirmed, 
@@ -114,10 +96,54 @@ valueBox(value = new_deaths,
 
 Row 
 -----------------------------------------------------------------------
+### Number of Confirmed Cases by Location (Top 15 Countries)
+```{r, include=FALSE}
+# Number of Confirmed Cases by Location (Top 15 Countries)
+top15_countries_cases <- data |> 
+  group_by(location) |> 
+  summarise(max_cases = max(total_cases)) |> 
+  arrange(desc(max_cases)) |> 
+  head(15)
+```
 
+```{r}
+# Create a bar chart for the top 15 countries with the highest total cases
+plot_ly(data = top15_countries_cases, x = ~location, y = ~max_cases, 
+        type = 'bar', marker = list(color = "#FF5733")) %>%
+  layout(title = 'Top 15 Countries with Highest Total Cases',
+         xaxis = list(title = 'Country', categoryorder = "total descending"),
+         yaxis = list(title = 'Total Cases'))
+
+```
+
+
+### Number of Deaths by Location (Top 15 Countries)
+```{r, include = FALSE}
+# Number of Deaths by Location (Top 15 Countries)
+top15_countries_deaths <- data |> 
+  group_by(location) |> 
+  summarise(max_deaths = max(total_deaths)) |> 
+  arrange(desc(max_deaths)) |> 
+  head(15)
+```
+
+```{r}
+# Create a bar chart for the top 15 countries with the highest total cases
+plot_ly(data = top15_countries_deaths, x = ~location, y = ~max_deaths, 
+        type = 'bar', marker = list(color = "#FFC300")) %>%
+  layout(title = 'Top 15 Countries with Highest Total Death Cases',
+         xaxis = list(title = 'Country', categoryorder = "total descending"),
+         yaxis = list(title = 'Total Deaths'))
+```
+
+
+
+Row 
+-----------------------------------------------------------------------
 ### Number of Confirmed Cases by Location {data-width=700}
 
 ```{r}
+library(echarts4r)
 data %>%
   e_charts(location) %>%
   e_map(total_cases) %>%
@@ -127,30 +153,14 @@ data %>%
 ```
 
 
-### Number of Confirmed Cases by Location (Top 15 Countries) {data-width=340}
+### Number of Death Cases by Location {data-width=700}
 
 ```{r}
-# Most cases by countries 
-data %>% 
-  group_by(location) %>% 
-  summarise(Confirmed = max(total_cases)) %>% 
-  arrange(desc(Confirmed)) %>% 
-  head(15) %>% 
-  hchart('column', hcaes(x = location, y = Confirmed, color = viridis::mako(n = 15))) %>%   hc_add_theme(hc_theme_google()) %>% 
-  hc_tooltip(pointFormat = '<b>Number of Confirmed Cases: </b> {point.y} <br>') %>% 
-  hc_credits(enabled = TRUE, text = '@Jubayer')
+library(echarts4r)
+data %>%
+  e_charts(location) %>%
+  e_map(total_deaths) %>%
+  e_visual_map() %>%
+  e_theme("infographic") %>%
+  e_visual_map_range(selected= list(0,200))
 ```
-
-
-Maps 
-=======================================================================
-
-### Recent Downlads
-
-Summary  
-=======================================================================
-
-
-About  
-=======================================================================
-
