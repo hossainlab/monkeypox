@@ -1,5 +1,5 @@
 ---
-title: "Monkeypox Data Explorer"
+title: "Monkeypox Outbreak Insights"
 output: 
   flexdashboard::flex_dashboard:
     orientation: rows
